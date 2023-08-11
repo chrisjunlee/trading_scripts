@@ -40,11 +40,11 @@ Label_String(price, timestamp) =>
     priceStr = str.format("{0,number,#.#}", price)
     timeStr = str.format_time(timestamp, format_timestamp, timezone)
 
-    if show_price
-        retString := retString + " " + priceStr
-    
     if show_timestamp
         retString := retString + " " + timeStr
+
+    if show_price
+        retString := retString + " " + priceStr
 
     retString
 
