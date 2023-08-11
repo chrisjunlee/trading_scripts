@@ -1,0 +1,59 @@
+// Session High/Low 
+// TradingView Pinescript 
+// author: chrisjunlee
+// @version=5
+
+indicator("Session High Low", shorttitle="High/Low", overlay=true)
+
+timezone                 = input.string  (defval = "America/Los_Angeles", title = "Timezone", options = ["America/Los_Angeles","America/New_York"], inline = "settings 1", group = "Indicator settings")
+timeframe                = input.int     (15,    title = "Timeframe",  inline = "settings", group = "Indicator settings")
+show_timeframe           =               (timeframe.multiplier <= timeframe) and  (timeframe.isintraday)
+
+Session_time             = input.session (title = "Session time", defval = "0630-1300", inline = "Session time", group = "Session settings")
+Session_start            = time          (timeframe.period, Session_time, timezone)
+Session_start_hour       = input.int     (title = "Hour",          defval = 06, minval = 0, maxval = 23, inline = "Session start", group = "Session settings")
+Session_start_minute     = input.int     (title = "Minute",        defval = 30, minval = 0, maxval = 59, inline = "Session start", group = "Session settings")
+Session_end_hour         = input.int     (title = "Hour",          defval = 13, minval = 0, maxval = 23, inline = "Session end",   group = "Session settings")
+Session_end_minute       = input.int     (title = "Minute",        defval = 0, minval = 0, maxval = 59, inline = "Session end",   group = "Session settings")
+Session_start_timestamp  = timestamp     (timezone, year, month, dayofmonth, Session_start_hour, Session_start_minute, 00)
+Session_end_timestamp    = timestamp     (timezone, year, month, dayofmonth, Session_end_hour,   Session_end_minute,   00)
+
+var float Session_high   = na
+var float Session_low    = na
+Session_high_timestamp   = time
+Session_low_timestamp    = time
+Session_high_color       = input.color   (title = "High", defval = color.green, inline = "colors",   group = "Colors")
+Session_low_color        = input.color   (title = "Low",  defval = color.red,  inline = "colors",   group = "Colors")
+var Session_high_price   = label.new     (x  = na, y  = na,          xloc = xloc.bar_time, textcolor = Session_high_color, style = label.style_label_left, size = size.small)
+var Session_low_price    = label.new     (x  = na, y  = na,          xloc = xloc.bar_time, textcolor = Session_low_color,  style = label.style_label_left, size = size.small)
+var Session_start_time   = time
+new_day                  = ta.change(dayofweek)       
+
+Session_start(sess) => 
+    t = time(timeframe = "", session = sess , timezone = timezone)
+    show_timeframe and (not barstate.isfirst) and na(t[1]) and not na(t)
+
+if Session_start(Session_time) and show_timeframe
+    Session_start_timestamp := time
+    Session_high            := high
+    Session_low             := low
+    Session_high_timestamp  := time
+    Session_low_timestamp   := time
+
+	Session_high_price := label.new (x = Session_start_timestamp, y = Session_high, xloc=xloc.bar_time, color=color.new(color.gray, 100), textcolor = Session_high_color, style = label.style_label_left, size = size.small)
+	Session_low_price  := label.new (x = Session_start_timestamp, y = Session_low,  xloc=xloc.bar_time, color=color.new(color.gray, 100), textcolor = Session_low_color,  style = label.style_label_left, size = size.small)
+	label.set_text     (Session_high_price, str.format("{0,number,#.#}", Session_high))
+	label.set_text     (Session_low_price, str.format("{0,number,#.#}", Session_low))
+
+else if (time > Session_start_timestamp and time < Session_end_timestamp)
+    Session_high := math.max(high, Session_high)
+    Session_low  := math.min(low,  Session_low )
+    if (Session_high > Session_high[1])
+        Session_high_timestamp := time
+        label.set_xy      (id = Session_high_price, x = Session_high_timestamp + timeframe.in_seconds(), y = Session_high)
+        label.set_text    (id = Session_high_price, text = str.format("{0,number,#.#}", Session_high) + " " + str.format_time(Session_high_timestamp,"HH:mma", timezone))    
+
+    if (Session_low  < Session_low [1])
+        Session_low_timestamp  := time    
+        label.set_xy      (id = Session_low_price,   x = Session_low_timestamp, y = Session_low )
+        label.set_text    (id = Session_low_price,  text = str.format("{0,number,#.#}", Session_low) + " " + str.format_time(Session_low_timestamp,"HH:mma", timezone))
