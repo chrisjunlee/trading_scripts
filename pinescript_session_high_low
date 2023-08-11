@@ -2,12 +2,12 @@
 // author: chrisjunlee
 // @version=5
 
-indicator("Session High Low", shorttitle="High/Low", overlay=true)
+indicator("Session High Low Timestamp", shorttitle="High/Low Timestamp", overlay=true)
 
 timezone                 = input.string  (defval = "America/Los_Angeles", title = "Timezone", options = ["America/Los_Angeles","America/New_York"], inline = "settings 1", group = "Indicator ")
 timeframe                = input.int     (15,    title = "Timeframe",  inline = "settings", group = "Time Settings")
 show_timestamp           = input.bool(defval = true, title = "Display Timestamp", inline = "displayOptions", group = "Display Settings")
-show_price               = input.bool(defval = true, title = "Display Price", inline = "displayOptions", group = "Display Settings")
+show_price               = input.bool(defval = false, title = "Display Price", inline = "displayOptions", group = "Display Settings")
 format_timestamp         = input.string(defval = "hh:mma", title = "Time Format", group = "Display Settings" )
 show_timeframe           =               (timeframe.multiplier <= timeframe) and  (timeframe.isintraday)
 
